@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "140323699960",
+    "firebase_url": "https://textbook-8da62.firebaseio.com",
+    "project_id": "textbook-8da62",
+    "storage_bucket": "textbook-8da62.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:140323699960:android:3853e18a2d93ab92",
+        "android_client_info": {
+          "package_name": "com.vilic.bojan.textbook"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "140323699960-fsusd8b8srt585fa416dpstpf1e5jn4i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vilic.bojan.textbook",
+            "certificate_hash": "3fde236c5aa8799fe03a9bc6b5af30684d8847c6"
+          }
+        },
+        {
+          "client_id": "140323699960-9nrousvgo28btt89qs8bvdhfocn9pao4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhc_XF27AGifYW-YXhV8WXcEw4SbyJEnE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "140323699960-9nrousvgo28btt89qs8bvdhfocn9pao4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
