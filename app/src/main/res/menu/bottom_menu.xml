@@ -3,15 +3,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/chatMenu"
         android:icon="@drawable/chaticon"
         android:title="@string/chats" />
     <item
+        android:id="@+id/friendsMenu"
         android:icon="@drawable/friendsicon"
         android:title="@string/people" />
     <item
+        android:id="@+id/exploreMenu"
         android:icon="@drawable/searchicon"
         android:title="@string/explore" />
     <item
+        android:id="@+id/settingsMenu"
         android:icon="@drawable/settingsicon"
         android:title="@string/settings" />
 </menu>

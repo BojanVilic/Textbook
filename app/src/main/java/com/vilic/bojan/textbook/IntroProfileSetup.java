@@ -74,8 +74,11 @@ public class IntroProfileSetup extends AppCompatActivity {
                 String userName = mUsersName.getText().toString();
                 if(!TextUtils.isEmpty(userName)){
                     mDatabaseRoot.child("display_name").setValue(userName);
+                    mDatabaseRoot.child("show_on_explore").setValue("true");
+                    mDatabaseRoot.child("message_notification").setValue("true");
+                    mDatabaseRoot.child("request_notification").setValue("true");
                     mNextButton.setEnabled(false);
-                    Intent intent = new Intent(IntroProfileSetup.this, MainActivity.class);
+                    Intent intent = new Intent(IntroProfileSetup.this, UsernameActivity.class);
                     startActivity(intent);
                     finish();
                 } else {
@@ -106,7 +109,6 @@ public class IntroProfileSetup extends AppCompatActivity {
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                         if(task.isSuccessful()){
                             final String downloadUrl = task.getResult().getDownloadUrl().toString();
-                            mDatabaseRoot.setValue("Proba, jedan");
                             mDatabaseRoot.child("image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
@@ -128,22 +130,5 @@ public class IntroProfileSetup extends AppCompatActivity {
                 Exception error = result.getError();
             }
         }
-
-        /*HashMap<String, String> userMap = new HashMap<>();
-        userMap.put("name", "Bojan");
-        userMap.put("profileImage", "profile image url");
-        mDatabaseRoot.setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-                    Toast.makeText(IntroProfileSetup.this, "Working", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    Toast.makeText(IntroProfileSetup.this, "NOT Working", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });*/
-
-
     }
 }

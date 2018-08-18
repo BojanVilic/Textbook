@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/colorPrimary"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".SettingsFragment">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/profileImage"
+        android:layout_marginTop="8dp"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:src="@color/colorPrimaryDark"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/changeImage"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_marginBottom="12dp"
+        android:layout_marginStart="96dp"
+        android:elevation="16dp"
+        android:src="@drawable/imageplus"
+        app:layout_constraintBottom_toBottomOf="@+id/profileImage"
+        app:layout_constraintStart_toStartOf="@+id/profileImage" />
+
+    <TextView
+        android:id="@+id/numberText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/profileImage"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:textColor="@color/colorPrimaryDark"
+        android:text="+1 981 346225"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <View
+        android:id="@+id/devider"
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toBottomOf="@+id/numberText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"/>
+
+    <android.support.design.widget.TextInputLayout
+        app:layout_constraintTop_toBottomOf="@+id/devider"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="30dp"
+        android:id="@+id/usersName"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/displayNameEditText"
+            android:backgroundTint="@color/colorAccent"
+            android:imeOptions="actionDone"
+            android:inputType="textCapWords"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        app:layout_constraintTop_toBottomOf="@+id/usersName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="30dp"
+        android:id="@+id/username"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/usernameEditText"
+            android:backgroundTint="@color/colorAccent"
+            android:singleLine="true"
+            android:digits="qwertyuiopasdfghjklzxcvbnm._-1234567890"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </android.support.design.widget.TextInputLayout>
+
+    <Switch
+        android:layout_marginTop="20dp"
+        android:checked="true"
+        app:layout_constraintTop_toBottomOf="@+id/username"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:theme="@style/SwitchColor"
+        app:layout_constraintStart_toStartOf="parent"
+        android:id="@+id/exploreSwitch"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="Appear to people on Explore page" />
+
+    <Switch
+        android:layout_marginTop="20dp"
+        android:checked="true"
+        app:layout_constraintTop_toBottomOf="@+id/exploreSwitch"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:theme="@style/SwitchColor"
+        app:layout_constraintStart_toStartOf="parent"
+        android:id="@+id/messageNotificationSwitch"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="Send message notifications" />
+
+    <Switch
+        android:layout_marginTop="20dp"
+        android:checked="true"
+        app:layout_constraintTop_toBottomOf="@+id/messageNotificationSwitch"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:theme="@style/SwitchColor"
+        app:layout_constraintStart_toStartOf="parent"
+        android:id="@+id/requestsNotificationSwitch"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="Send request notifications" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="60dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:alpha="0"
+        android:background="@color/colorAccent"
+        android:text="Save"
+        android:textColor="@color/colorPrimary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</android.support.constraint.ConstraintLayout>
