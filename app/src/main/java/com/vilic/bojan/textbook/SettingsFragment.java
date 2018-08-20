@@ -59,10 +59,12 @@ public class SettingsFragment extends Fragment {
     private CircleImageView mChangeImage, mProfileImage;
     private static final int GALLERY_CODE = 1;
     private String uid, number;
+    private DatabaseReference mUsernameCheck;
     private View view;
     private DatabaseReference mDatabaseRoot;
     private DatabaseReference mDatabaseRootRoot;
     private ProgressDialog pD;
+    private boolean pass = true;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -102,6 +104,7 @@ public class SettingsFragment extends Fragment {
 
         mDatabaseRoot = FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
         mDatabaseRootRoot = FirebaseDatabase.getInstance().getReference();
+        mUsernameCheck = FirebaseDatabase.getInstance().getReference().child("Usernames");
 
         mStorageReference = FirebaseStorage.getInstance().getReference();
 
@@ -218,20 +221,32 @@ public class SettingsFragment extends Fragment {
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                final String desiredUsername = usernameEditText.getText().toString();
+
                 if(usernameEditText.length() < 4){
                     Toast.makeText(getActivity(), "Username must have at least 4 characters", Toast.LENGTH_SHORT).show();
                 }
                 else if(usernameEditText.length() > 20){
                     Toast.makeText(getActivity(), "Username must not contain more than 20 characters", Toast.LENGTH_SHORT).show();
                 } else {
-                    mDatabaseRootRoot.child("Usernames").child(number).setValue(usernameEditText.getText().toString());
-                    mDatabaseRootRoot.child("Users").child(uid).child("username").setValue(usernameEditText.getText().toString());
-                    mDatabaseRootRoot.child("Users").child(uid).child("display_name").setValue(editText.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    mUsernameCheck.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(getActivity(), "Your profile's been updated", Toast.LENGTH_SHORT).show();
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for(DataSnapshot data: dataSnapshot.getChildren()){
+                                String currentUsername = data.getValue().toString();
+                                if(desiredUsername.equals(currentUsername)){
+                                    Log.i("PROBA", "POSTOJI ISTI");
+                                    pass = false;
+                                    break;
+                                } else {
+                                    pass = true;
+                                }
                             }
+                            updateProfile(pass);
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Log.i("PROBA", "NE POSTOJI ISTI");
                         }
                     });
                 }
@@ -239,6 +254,23 @@ public class SettingsFragment extends Fragment {
         });
 
         return view;
+    }
+
+    void updateProfile(boolean pass){
+        if(pass) {
+            mDatabaseRootRoot.child("Usernames").child(number).setValue(usernameEditText.getText().toString());
+            mDatabaseRootRoot.child("Users").child(uid).child("username").setValue(usernameEditText.getText().toString());
+            mDatabaseRootRoot.child("Users").child(uid).child("display_name").setValue(editText.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(getActivity(), "Your profile's been updated", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        } else {
+            Toast.makeText(getActivity(), "That username is already in use", Toast.LENGTH_SHORT).show();
+        }
     }
 
     TextWatcher textWatcher = new TextWatcher() {
