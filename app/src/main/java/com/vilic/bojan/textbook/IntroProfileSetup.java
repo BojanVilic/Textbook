@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.futuremind.recyclerviewfastscroll.Utils;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -40,6 +41,7 @@ public class IntroProfileSetup extends AppCompatActivity {
     private String uid;
     private StorageReference mStorageReference;
     private DatabaseReference mDatabaseRoot;
+    private Uri mainUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,29 +105,34 @@ public class IntroProfileSetup extends AppCompatActivity {
                 progressDialog.setMessage("Uploading image...");
                 progressDialog.show();
                 Uri resultUri = result.getUri();
-                StorageReference filepath = mStorageReference.child("profile_images").child(uid + ".jpg");
-                filepath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+
+                final StorageReference filepath = mStorageReference.child("profile_images").child(uid + ".jpg");
+                filepath.putFile(resultUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        if(task.isSuccessful()){
-                            final String downloadUrl = task.getResult().getDownloadUrl().toString();
-                            mDatabaseRoot.child("image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if(task.isSuccessful()){
-                                        Picasso.get().load(downloadUrl).into(mProfileImage);
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        filepath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                mainUri = uri;
+                                mDatabaseRoot.child("image").setValue(mainUri.toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if(task.isSuccessful()){
+                                            Picasso.get().load(mainUri).into(mProfileImage);
+                                        }
                                     }
-                                }
-                            });
-                            progressDialog.dismiss();
-                            mUsersName.setEnabled(true);
-                            mNextButton.setEnabled(true);
-                            mAppearingDescription.animate().alpha(1f).setDuration(500).start();
-                            mUsersName.animate().alpha(1f).setDuration(500).start();
-                            mNextButton.animate().alpha(1f).setDuration(500).start();
-                        }
+                                });
+                                progressDialog.dismiss();
+                                mUsersName.setEnabled(true);
+                                mNextButton.setEnabled(true);
+                                mAppearingDescription.animate().alpha(1f).setDuration(500).start();
+                                mUsersName.animate().alpha(1f).setDuration(500).start();
+                                mNextButton.animate().alpha(1f).setDuration(500).start();
+                            }
+                        });
                     }
                 });
+
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             }

@@ -79,7 +79,7 @@ public class AuthActivity extends AppCompatActivity {
                     btnType = 1;
 
                     mVerifyButton.setEnabled(false);
-                    mPhoneNumber = mCodePicker.getSelectedCountryCode() + mNumber.getText().toString();
+                    mPhoneNumber = "+" + mCodePicker.getSelectedCountryCode() + mNumber.getText().toString();
 
                     PhoneAuthProvider.getInstance().verifyPhoneNumber(mPhoneNumber, 60, TimeUnit.SECONDS, AuthActivity.this, mCallbacks);
                 }

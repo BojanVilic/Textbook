@@ -38,6 +38,14 @@ public class MainActivity extends AppCompatActivity {
 
         mainBottomNavigation = (BottomNavigationView) findViewById(R.id.mainBottomNavigation);
 
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+
+        if(currentUser == null){
+            Intent authIntent = new Intent(MainActivity.this, AuthActivity.class);
+            startActivity(authIntent);
+            finish();
+        }
+
         chatsFragment = new ChatsFragment();
         friendsFragment = new FriendsFragment();
         exploreFragment = new ExploreFragment();
@@ -73,13 +81,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-
-        if(currentUser == null){
-            Intent authIntent = new Intent(MainActivity.this, AuthActivity.class);
-            startActivity(authIntent);
-            finish();
-        }
     }
 
     private void replaceFragment(Fragment fragment) {

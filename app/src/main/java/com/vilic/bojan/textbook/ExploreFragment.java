@@ -11,8 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-//import com.firebase.ui.database.FirebaseRecyclerAdapter;
-//import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -25,7 +25,7 @@ public class ExploreFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private DatabaseReference mDatabaseReference;
-    //private FirebaseRecyclerOptions<ExploreGettersAndSetters> options;
+    private FirebaseRecyclerOptions<ExploreGettersAndSetters> options;
     public ExploreFragment() {
         // Required empty public constructor
     }
@@ -47,7 +47,7 @@ public class ExploreFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        /*options = new FirebaseRecyclerOptions.Builder<ExploreGettersAndSetters>().setQuery(mDatabaseReference, ExploreGettersAndSetters.class).build();
+        options = new FirebaseRecyclerOptions.Builder<ExploreGettersAndSetters>().setQuery(mDatabaseReference, ExploreGettersAndSetters.class).build();
 
         FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder> adapter = new FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder>(options) {
             @NonNull
@@ -81,6 +81,6 @@ public class ExploreFragment extends Fragment {
             TextView mDisplayName = (TextView) mView.findViewById(R.id.singleDisplayName);
             mDisplayName.setText(display_name);
 
-        }*/
+        }
     }
 }

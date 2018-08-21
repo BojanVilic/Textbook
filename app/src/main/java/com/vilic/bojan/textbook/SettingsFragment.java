@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -65,6 +66,8 @@ public class SettingsFragment extends Fragment {
     private DatabaseReference mDatabaseRootRoot;
     private ProgressDialog pD;
     private boolean pass = true;
+    private Uri mainUri;
+    private String display_name;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -111,7 +114,7 @@ public class SettingsFragment extends Fragment {
         mDatabaseRoot.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                String display_name = dataSnapshot.child("display_name").getValue().toString();
+                display_name = dataSnapshot.child("display_name").getValue().toString();
                 String image = dataSnapshot.child("image").getValue().toString();
                 String request_notification = dataSnapshot.child("request_notification").getValue().toString();
                 String message_notification = dataSnapshot.child("message_notification").getValue().toString();
@@ -221,6 +224,16 @@ public class SettingsFragment extends Fragment {
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String displayNameCheck = editText.getText().toString();
+                if(!displayNameCheck.equals(display_name)){
+                    mDatabaseRootRoot.child("Users").child(uid).child("display_name").setValue(editText.getText().toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(getActivity(), "Your profile's been updated", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+
                 final String desiredUsername = usernameEditText.getText().toString();
 
                 if(usernameEditText.length() < 4){
@@ -228,14 +241,14 @@ public class SettingsFragment extends Fragment {
                 }
                 else if(usernameEditText.length() > 20){
                     Toast.makeText(getActivity(), "Username must not contain more than 20 characters", Toast.LENGTH_SHORT).show();
-                } else {
+                }
+                else {
                     mUsernameCheck.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             for(DataSnapshot data: dataSnapshot.getChildren()){
                                 String currentUsername = data.getValue().toString();
                                 if(desiredUsername.equals(currentUsername)){
-                                    Log.i("PROBA", "POSTOJI ISTI");
                                     pass = false;
                                     break;
                                 } else {
@@ -246,7 +259,7 @@ public class SettingsFragment extends Fragment {
                         }
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
-                            Log.i("PROBA", "NE POSTOJI ISTI");
+                            Log.i("TAG", "There's no username like this.");
                         }
                     });
                 }
@@ -259,8 +272,7 @@ public class SettingsFragment extends Fragment {
     void updateProfile(boolean pass){
         if(pass) {
             mDatabaseRootRoot.child("Usernames").child(number).setValue(usernameEditText.getText().toString());
-            mDatabaseRootRoot.child("Users").child(uid).child("username").setValue(usernameEditText.getText().toString());
-            mDatabaseRootRoot.child("Users").child(uid).child("display_name").setValue(editText.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+            mDatabaseRootRoot.child("Users").child(uid).child("username").setValue(usernameEditText.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()) {
@@ -306,31 +318,34 @@ public class SettingsFragment extends Fragment {
                 progressDialog.setMessage("Uploading image...");
                 progressDialog.show();
                 Uri resultUri = result.getUri();
-                StorageReference filepath = mStorageReference.child("profile_images").child(uid + ".jpg");
-                filepath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                final StorageReference filepath = mStorageReference.child("profile_images").child(uid + ".jpg");
+                filepath.putFile(resultUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        if(task.isSuccessful()){
-                            final String downloadUrl = task.getResult().getDownloadUrl().toString();
-                            mDatabaseRoot.child("image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if(task.isSuccessful()){
-                                        Picasso.get().load(downloadUrl).into(mProfileImage, new Callback() {
-                                            @Override
-                                            public void onSuccess() {
-                                                progressDialog.dismiss();
-                                            }
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        filepath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                mainUri = uri;
+                                mDatabaseRoot.child("image").setValue(mainUri.toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if(task.isSuccessful()){
+                                            Picasso.get().load(mainUri.toString()).into(mProfileImage, new Callback() {
+                                                @Override
+                                                public void onSuccess() {
+                                                    progressDialog.dismiss();
+                                                }
 
-                                            @Override
-                                            public void onError(Exception e) {
-                                                progressDialog.dismiss();
-                                            }
-                                        });
+                                                @Override
+                                                public void onError(Exception e) {
+                                                    progressDialog.dismiss();
+                                                }
+                                            });
+                                        }
                                     }
-                                }
-                            });
-                        }
+                                });
+                            }
+                        });
                     }
                 });
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
