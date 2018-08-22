@@ -9,34 +9,26 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
 
-
-/**
- * A simple {@link Fragment} subclass.
- */
 public class ExploreFragment extends Fragment {
 
 
     private RecyclerView mRecyclerView;
     private DatabaseReference mDatabaseReference;
-    private FirebaseRecyclerOptions<ExploreGettersAndSetters> options;
     public ExploreFragment() {
-        // Required empty public constructor
+
     }
 
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_explore, container, false);
-
         mRecyclerView = (RecyclerView) view.findViewById(R.id.exploreRecyclerView);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -47,19 +39,17 @@ public class ExploreFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        options = new FirebaseRecyclerOptions.Builder<ExploreGettersAndSetters>().setQuery(mDatabaseReference, ExploreGettersAndSetters.class).build();
-
-        FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder> adapter = new FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder>(options) {
-            @NonNull
+        FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder> adapter = new FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder>(
+                ExploreGettersAndSetters.class,
+                R.layout.explore_single_layout,
+                ExploreViewHolder.class,
+                mDatabaseReference
+        ) {
             @Override
-            public ExploreViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                return null;
-            }
-
-            @Override
-            protected void onBindViewHolder(@NonNull ExploreViewHolder holder, int position, @NonNull ExploreGettersAndSetters model) {
-
-                holder.setName(model.getDisplay_name());
+            protected void populateViewHolder(ExploreViewHolder viewHolder, ExploreGettersAndSetters model, int position) {
+                viewHolder.setName(model.getDisplay_name());
+                viewHolder.setUsername(model.getUsername());
+                viewHolder.setImage(model.getImage());
             }
         };
 
@@ -76,11 +66,19 @@ public class ExploreFragment extends Fragment {
             mView = itemView;
         }
 
-
         public void setName(String display_name) {
             TextView mDisplayName = (TextView) mView.findViewById(R.id.singleDisplayName);
             mDisplayName.setText(display_name);
+        }
 
+        public void setUsername(String username) {
+            TextView mUsername = (TextView) mView.findViewById(R.id.singleUsername);
+            mUsername.setText(username);
+        }
+
+        public void setImage(String image) {
+            ImageView mImage = (ImageView) mView.findViewById(R.id.singleImageView);
+            Picasso.get().load(image).into(mImage);
         }
     }
 }
