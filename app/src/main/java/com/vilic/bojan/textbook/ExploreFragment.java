@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +40,20 @@ public class ExploreFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
+        /*0+7FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder> adapterOdd = new FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder>(
+                ExploreGettersAndSetters.class,
+                R.layout.explore_single_flipped_layout,
+                ExploreViewHolder.class,
+                mDatabaseReference
+        ) {
+            @Override
+            protected void populateViewHolder(ExploreViewHolder viewHolder, ExploreGettersAndSetters model, int position) {
+                viewHolder.setName(model.getDisplay_name());
+                viewHolder.setUsername(model.getUsername());
+                viewHolder.setImage(model.getImage());
+            }
+        };*/
+
         FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder> adapter = new FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder>(
                 ExploreGettersAndSetters.class,
                 R.layout.explore_single_layout,
@@ -47,6 +62,7 @@ public class ExploreFragment extends Fragment {
         ) {
             @Override
             protected void populateViewHolder(ExploreViewHolder viewHolder, ExploreGettersAndSetters model, int position) {
+                Log.i("POSITION", String.valueOf(position));
                 viewHolder.setName(model.getDisplay_name());
                 viewHolder.setUsername(model.getUsername());
                 viewHolder.setImage(model.getImage());
