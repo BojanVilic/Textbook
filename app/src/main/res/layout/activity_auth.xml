@@ -11,6 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Verify your number"
+        android:fontFamily="@font/nunito"
         android:textColor="@color/colorAccent"
         android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,6 +20,7 @@
 
     <TextView
         android:id="@+id/description"
+        android:fontFamily="@font/nunito"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -50,6 +52,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="55dp"
         android:layout_marginTop="10dp"
+        android:fontFamily="@font/nunito"
         android:hint="phone number"
         android:backgroundTint="@color/colorAccent"
         android:inputType="number"
@@ -64,6 +67,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="32dp"
+        android:fontFamily="@font/nunito"
         android:layout_marginTop="10dp"
         android:textColor="@color/colorAccent"
         android:textSize="18sp"
@@ -79,6 +83,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="10dp"
+        android:fontFamily="@font/nunito"
         android:backgroundTint="@color/colorAccent"
         android:hint="verification code"
         android:inputType="number"
@@ -95,6 +100,8 @@
         android:layout_height="wrap_content"
         android:padding="5dp"
         android:layout_marginTop="50dp"
+        android:fontFamily="@font/nunito"
+
         android:background="@color/colorAccent"
         android:text="Verify"
         android:textColor="@color/colorPrimary"
