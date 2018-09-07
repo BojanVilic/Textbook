@@ -1,12 +1,11 @@
 package com.vilic.bojan.textbook;
 
-import com.google.firebase.database.ServerValue;
+public class ConversationGettersAndSetters {
 
-import java.util.HashMap;
+    private String timestamp, message, sender;
 
-public class ChatGettersAndSetters {
-
-    private String message, sender, timestamp;
+    public ConversationGettersAndSetters() {
+    }
 
     public String getTimestamp() {
         return timestamp;
@@ -14,12 +13,6 @@ public class ChatGettersAndSetters {
 
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
-    }
-
-    public ChatGettersAndSetters(String message, String timestamp, String sender) {
-        this.timestamp = timestamp;
-        this.message = message;
-        this.sender = sender;
     }
 
     public String getMessage() {
@@ -30,10 +23,6 @@ public class ChatGettersAndSetters {
         this.message = message;
     }
 
-    public ChatGettersAndSetters(){
-
-    }
-
     public String getSender() {
         return sender;
     }
@@ -41,4 +30,11 @@ public class ChatGettersAndSetters {
     public void setSender(String sender) {
         this.sender = sender;
     }
+
+    public ConversationGettersAndSetters(String timestamp, String message, String sender) {
+        this.timestamp = timestamp;
+        this.message = message;
+        this.sender = sender;
+    }
+
 }

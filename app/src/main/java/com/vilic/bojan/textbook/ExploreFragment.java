@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +32,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,8 +45,11 @@ public class ExploreFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private DatabaseReference mDatabaseReference, mDatabaseRequests;
     private EditText searchBox;
+    private TextView mResultNumber;
     private Button searchButton;
     private String uID;
+    private long count = 0;
+    private LinearLayout layout;
 
     public ExploreFragment() {
 
@@ -52,7 +59,9 @@ public class ExploreFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_explore, container, false);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.exploreRecyclerView);
+        mResultNumber = view.findViewById(R.id.results);
         searchBox = (EditText) view.findViewById(R.id.searchBox);
+        layout = view.findViewById(R.id.header);
         searchButton = (Button) view.findViewById(R.id.searchButton);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -64,7 +73,11 @@ public class ExploreFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String searchText = searchBox.getText().toString();
-                searchPeople(searchText);
+                /*if(TextUtils.isEmpty(searchText)){
+                    Toast.makeText(getActivity(), "Search can't be empty", Toast.LENGTH_SHORT).show();
+                } else {*/
+                    searchPeople(searchText);
+                /*}*/
             }
         });
 
@@ -73,7 +86,7 @@ public class ExploreFragment extends Fragment {
 
     private void searchPeople(String searchText){
 
-        Query searchQuery = mDatabaseReference.orderByChild("display_name").startAt(searchText).endAt(searchText + "\uf8ff");
+        final Query searchQuery = mDatabaseReference.orderByChild("display_name").startAt(searchText).endAt(searchText + "\uf8ff");
 
         FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder> adapter = new FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder>(
                 ExploreGettersAndSetters.class,
@@ -87,6 +100,23 @@ public class ExploreFragment extends Fragment {
                 viewHolder.setName(model.getDisplay_name());
                 viewHolder.setUsername(model.getUsername());
                 viewHolder.setImage(model.getImage());
+
+                searchQuery.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        count = dataSnapshot.getChildrenCount();
+
+                        layout.setVisibility(View.VISIBLE);
+
+                        String rslt = "We found " + count + " result for your search";
+                        mResultNumber.setText(rslt);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
 
                 viewHolder.mDetailsButton.setOnClickListener(new View.OnClickListener() {
                     @Override

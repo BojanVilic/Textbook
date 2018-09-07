@@ -14,11 +14,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
+import java.util.HashMap;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -31,30 +33,21 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     private DatabaseReference databaseReference, referenceForChatterImage;
     private String currentUserId, username, profileImage, imageUrl;
     private int finding = 0;
+    private String imgUrl;
 
     private List<ChatGettersAndSetters> mDataSet;
-    private String mTimestamp;
+    private String timestamp;
 
-    public ChatAdapter(List<ChatGettersAndSetters> dataSet, String timestamp) {
+    public ChatAdapter(List<ChatGettersAndSetters> dataSet, String ts, String url) {
+        imgUrl = url;
         mDataSet = dataSet;
-        mTimestamp = timestamp;
+        timestamp = ts;
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         currentUserId = firebaseUser.getUid();
 
         databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(currentUserId);
         referenceForChatterImage = FirebaseDatabase.getInstance().getReference().child("Users");
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                profileImage = dataSnapshot.child("image").getValue().toString();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
     @NonNull
@@ -98,7 +91,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
                     if(mDataSet.get(position).getSender().equals(username)){
                         holder.setImage(imageUrl);
                     }
-                    Log.i("TAG", imageUrl);
                 }
 
                 @Override
@@ -109,7 +101,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         }
 
         if(mDataSet.get(position).getSender().equals(currentUserId)) {
-            holder.setImage(profileImage);
+            holder.setImage(imgUrl);
         }
         holder.mMessage.setText(chat.getMessage());
     }

@@ -27,7 +27,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -38,7 +40,7 @@ public class ChatActivity extends AppCompatActivity {
     private String currentUserId, chatterId;
     private List<ChatGettersAndSetters> mChats;
     private ChatAdapter mAdapter;
-    private String mId, username;
+    private String mId, url, ts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +55,6 @@ public class ChatActivity extends AppCompatActivity {
         mChats = new ArrayList<>();
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new ChatAdapter(mChats, mId);
-        mRecyclerView.setAdapter(mAdapter);
 
         mRootRef = FirebaseDatabase.getInstance().getReference();
 
@@ -66,7 +66,9 @@ public class ChatActivity extends AppCompatActivity {
         mRootRef.child("Users").child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                username = dataSnapshot.child("username").getValue().toString();
+                url = dataSnapshot.child("image").getValue().toString();
+                mAdapter = new ChatAdapter(mChats, ts, url);
+                mRecyclerView.setAdapter(mAdapter);
             }
 
             @Override
@@ -80,6 +82,8 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
                 mMessageReference = FirebaseDatabase.getInstance().getReference().child("Users").child(currentUserId).child("messages").child(chatterId).push();
                 mMessageReferenceForFriend = FirebaseDatabase.getInstance().getReference().child("Users").child(chatterId).child("messages").child(currentUserId).push();
+                String pushid = mMessageReference.getKey();
+                String anotherPushid= mMessageReferenceForFriend.getKey();
                 String message = mTextMessage.getText().toString();
                 if(!TextUtils.isEmpty(message)){
                     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd.MM.yyyy. ");
