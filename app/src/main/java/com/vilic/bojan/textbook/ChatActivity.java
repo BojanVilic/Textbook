@@ -86,10 +86,12 @@ public class ChatActivity extends AppCompatActivity {
                 String anotherPushid= mMessageReferenceForFriend.getKey();
                 String message = mTextMessage.getText().toString();
                 if(!TextUtils.isEmpty(message)){
-                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd.MM.yyyy. ");
+                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd.MM.yyyy.");
                     mId = sdf.format(new Date());
                     mMessageReference.setValue(new ChatGettersAndSetters(message, mId, currentUserId));
                     mMessageReferenceForFriend.setValue(new ChatGettersAndSetters(message, mId, currentUserId));
+                    mRootRef.child("Chats").child(currentUserId).child(chatterId).child("timestamp").setValue(ServerValue.TIMESTAMP);
+                    mRootRef.child("Chats").child(chatterId).child(currentUserId).child("timestamp").setValue(ServerValue.TIMESTAMP);
                     mTextMessage.setText("");
                 }
             }

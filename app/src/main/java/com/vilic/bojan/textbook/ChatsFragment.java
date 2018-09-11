@@ -1,8 +1,10 @@
 package com.vilic.bojan.textbook;
 
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -42,9 +44,14 @@ public class ChatsFragment extends Fragment {
     private List<ChatGettersAndSetters> mChats;
     private List<String> mChattersIds;
     private String timestamp;
-    private DatabaseReference mRootRef, mFriendDatabase, mMessageDatabase;
-    private String uID;
+    private DatabaseReference mRootRef, mFriendDatabase, mMessageDatabase, mChatReference;
+    private String uID, lastID;
     private int i = 0;
+    private LinearLayoutManager mLayoutManager;
+    private long number = 0;
+    private ArrayList<String> ids = new ArrayList<>();
+    private ArrayList<String> lastTimestamps = new ArrayList<>();
+    private ArrayList<String> unixTimestamps = new ArrayList<>();
 
     public ChatsFragment() {
         // Required empty public constructor
@@ -62,27 +69,35 @@ public class ChatsFragment extends Fragment {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         uID = firebaseUser.getUid();
 
+        ids.clear();
+        lastTimestamps.clear();
+        unixTimestamps.clear();
+
         mMessageDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uID).child("messages");
+        mChatReference = FirebaseDatabase.getInstance().getReference().child("Chats").child(uID);
         mRecyclerView = view.findViewById(R.id.recyclerView);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mLayoutManager.setReverseLayout(true);
+        mLayoutManager.setStackFromEnd(true);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+        drawView();
 
         return view;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
+    public void drawView(){
+        Query conversationQuery = mChatReference.orderByChild("timestamp");
 
-        Query conversationQuery = mMessageDatabase.orderByChild("timestamp");
-
-        FirebaseRecyclerAdapter<ConversationGettersAndSetters, ConversationViewHolder> recyclerAdapter = new FirebaseRecyclerAdapter<ConversationGettersAndSetters, ConversationViewHolder>(
-                ConversationGettersAndSetters.class,
+        FirebaseRecyclerAdapter<ChatFragmentModel, ConversationViewHolder> recyclerAdapter = new FirebaseRecyclerAdapter<ChatFragmentModel, ConversationViewHolder>(
+                ChatFragmentModel.class,
                 R.layout.chat_fragment_single,
                 ConversationViewHolder.class,
                 conversationQuery
         ) {
             @Override
-            protected void populateViewHolder(final ConversationViewHolder viewHolder, final ConversationGettersAndSetters model, int position) {
+            protected void populateViewHolder(final ConversationViewHolder viewHolder, final ChatFragmentModel model, int position) {
+
                 final String userKey = getRef(position).getKey();
 
                 mFriendDatabase.child(userKey).addValueEventListener(new ValueEventListener() {
@@ -103,10 +118,10 @@ public class ChatsFragment extends Fragment {
                 mFriendDatabase.child(userKey).child("messages").child(uID).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for(DataSnapshot ds : dataSnapshot.getChildren()) {
+                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
                             String lastMessage = ds.child("message").getValue().toString();
                             String timestamp = ds.child("timestamp").getValue().toString();
-                            String timestampFix = timestamp.substring(0, timestamp.length()-13);
+                            String timestampFix = timestamp.substring(0, timestamp.length() - 12);
                             viewHolder.setMessage(lastMessage);
                             viewHolder.setTimestamp(timestampFix);
                         }
@@ -126,6 +141,8 @@ public class ChatsFragment extends Fragment {
                         startActivity(i);
                     }
                 });
+
+                number++;
             }
         };
         mRecyclerView.setAdapter(recyclerAdapter);

@@ -5,9 +5,12 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Layout;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -49,6 +52,7 @@ public class ExploreFragment extends Fragment {
     private Button searchButton;
     private String uID;
     private long count = 0;
+    private int notfound = 0;
     private LinearLayout layout;
 
     public ExploreFragment() {
@@ -73,11 +77,12 @@ public class ExploreFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String searchText = searchBox.getText().toString();
-                /*if(TextUtils.isEmpty(searchText)){
+                if(TextUtils.isEmpty(searchText)){
                     Toast.makeText(getActivity(), "Search can't be empty", Toast.LENGTH_SHORT).show();
-                } else {*/
+                } else {
+                    notfound = 0;
                     searchPeople(searchText);
-                /*}*/
+                }
             }
         });
 
@@ -95,16 +100,35 @@ public class ExploreFragment extends Fragment {
                 searchQuery
         ) {
             @Override
-            protected void populateViewHolder(final ExploreViewHolder viewHolder, ExploreGettersAndSetters model, final int position) {
+            protected void populateViewHolder(final ExploreViewHolder viewHolder, final ExploreGettersAndSetters model, final int position) {
                 final String userKey = getRef(position).getKey();
-                viewHolder.setName(model.getDisplay_name());
-                viewHolder.setUsername(model.getUsername());
-                viewHolder.setImage(model.getImage());
+                
+                mDatabaseReference.child(userKey).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        String showOnExplore = dataSnapshot.child("show_on_explore").getValue().toString();
+                        if(showOnExplore.equals("true")){
+                            viewHolder.mView.setVisibility(View.VISIBLE);
+
+                            viewHolder.setName(model.getDisplay_name());
+                            viewHolder.setUsername(model.getUsername());
+                            viewHolder.setImage(model.getImage());
+                        } else {
+                            viewHolder.layout.setVisibility(View.GONE);
+                            notfound--;
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
 
                 searchQuery.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        count = dataSnapshot.getChildrenCount();
+                        count = dataSnapshot.getChildrenCount() + notfound;
 
                         layout.setVisibility(View.VISIBLE);
 
@@ -135,13 +159,14 @@ public class ExploreFragment extends Fragment {
 
         View mView;
         private Button mDetailsButton;
-
+        private ConstraintLayout layout;
 
         public ExploreViewHolder(@NonNull View itemView) {
             super(itemView);
 
             mView = itemView;
             mDetailsButton = mView.findViewById(R.id.detailsButton);
+            layout = (ConstraintLayout) mView.findViewById(R.id.layout);
         }
 
         public void setName(String display_name) {

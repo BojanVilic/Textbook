@@ -116,7 +116,7 @@
         android:id="@+id/messageNotificationSwitch"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:text="Send message notifications" />
+        android:text="Message notifications" />
 
     <Switch
         android:layout_marginTop="20dp"
@@ -129,7 +129,7 @@
         android:id="@+id/requestsNotificationSwitch"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:text="Send request notifications" />
+        android:text="Request notifications" />
 
     <Button
         android:id="@+id/saveButton"

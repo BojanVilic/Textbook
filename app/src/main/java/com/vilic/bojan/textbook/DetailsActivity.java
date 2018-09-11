@@ -142,6 +142,19 @@ public class DetailsActivity extends AppCompatActivity {
             }
         });
 
+        mRootDatabase.child(uID).child("messages").child(id).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String messagesCount = String.valueOf(dataSnapshot.getChildrenCount());
+                mMessagesExchanged.setText("Messages exchanged:\n" + messagesCount);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
         mAddButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
