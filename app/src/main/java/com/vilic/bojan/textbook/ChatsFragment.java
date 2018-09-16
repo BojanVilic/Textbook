@@ -1,7 +1,9 @@
 package com.vilic.bojan.textbook;
 
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -120,6 +122,9 @@ public class ChatsFragment extends Fragment {
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         for (DataSnapshot ds : dataSnapshot.getChildren()) {
                             String lastMessage = ds.child("message").getValue().toString();
+                            if(lastMessage.contains("https://firebasestorage.googleapis.com")){
+                                lastMessage = "Image received";
+                            }
                             String timestamp = ds.child("timestamp").getValue().toString();
                             String timestampFix = timestamp.substring(0, timestamp.length() - 12);
                             viewHolder.setMessage(lastMessage);
@@ -130,6 +135,32 @@ public class ChatsFragment extends Fragment {
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) {
 
+                    }
+                });
+
+                viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+
+                        dialog.setTitle("Delete chat");
+                        dialog.setMessage("Are you sure you want to delete this chat?");
+                        dialog.setPositiveButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        dialog.setNegativeButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                mChatReference.child(userKey).removeValue();
+                                mMessageDatabase.child(userKey).removeValue();
+                            }
+                        });
+                        dialog.show();
+
+                        return false;
                     }
                 });
 

@@ -19,13 +19,38 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
         android:layout_marginTop="5dp"
+        android:autoLink="web"
         android:background="@drawable/background_single_chat_white"
         android:fontFamily="@font/nunito"
         android:maxWidth="260dp"
         android:padding="7dp"
-        android:text="Text view"
+        android:text="Loading..."
         android:textColor="@color/colorPrimaryDark"
         app:layout_constraintEnd_toStartOf="@id/profileImage"
         app:layout_constraintTop_toTopOf="@id/profileImage" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:scaleType="centerCrop"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:maxHeight="200dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintEnd_toStartOf="@id/profileImage"
+        app:layout_constraintTop_toTopOf="@id/profileImage" />
+
+    <TextView
+        android:id="@+id/timestampText"
+        android:textSize="10sp"
+        android:alpha="0"
+        android:layout_marginEnd="5dp"
+        app:layout_constraintEnd_toEndOf="@id/textMessage"
+        app:layout_constraintTop_toBottomOf="@id/textMessage"
+        android:fontFamily="@font/nunito"
+        android:text=""
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
 </android.support.constraint.ConstraintLayout>

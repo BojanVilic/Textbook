@@ -159,8 +159,10 @@ public class SettingsFragment extends Fragment {
                     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                         if(b) {
                             mDatabaseRoot.child("show_on_explore").setValue("true");
+                            Toast.makeText(getActivity(), "Preference saved", Toast.LENGTH_SHORT).show();
                         } else {
                             mDatabaseRoot.child("show_on_explore").setValue("false");
+                            Toast.makeText(getActivity(), "Preference saved", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -169,8 +171,10 @@ public class SettingsFragment extends Fragment {
                     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                         if(b) {
                             mDatabaseRoot.child("message_notification").setValue("true");
+                            Toast.makeText(getActivity(), "Preference saved", Toast.LENGTH_SHORT).show();
                         } else {
                             mDatabaseRoot.child("message_notification").setValue("false");
+                            Toast.makeText(getActivity(), "Preference saved", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -179,8 +183,10 @@ public class SettingsFragment extends Fragment {
                     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                         if(b) {
                             mDatabaseRoot.child("request_notification").setValue("true");
+                            Toast.makeText(getActivity(), "Preference saved", Toast.LENGTH_SHORT).show();
                         } else {
                             mDatabaseRoot.child("request_notification").setValue("false");
+                            Toast.makeText(getActivity(), "Preference saved", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });

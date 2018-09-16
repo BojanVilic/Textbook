@@ -24,6 +24,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -50,10 +53,11 @@ public class ExploreFragment extends Fragment {
     private EditText searchBox;
     private TextView mResultNumber;
     private Button searchButton;
-    private String uID;
+    private String uID, displayName;
     private long count = 0;
     private int notfound = 0;
     private LinearLayout layout;
+    private InterstitialAd mInterstitialAd;
 
     public ExploreFragment() {
 
@@ -67,6 +71,11 @@ public class ExploreFragment extends Fragment {
         searchBox = (EditText) view.findViewById(R.id.searchBox);
         layout = view.findViewById(R.id.header);
         searchButton = (Button) view.findViewById(R.id.searchButton);
+
+        mInterstitialAd = new InterstitialAd(getActivity());
+        mInterstitialAd.setAdUnitId("ca-app-pub-3529881240045238/3280316725");
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Users");
         mDatabaseRequests = FirebaseDatabase.getInstance().getReference().child("Friend_requests");
@@ -76,6 +85,13 @@ public class ExploreFragment extends Fragment {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(mInterstitialAd.isLoaded()){
+                    mInterstitialAd.show();
+                } else {
+                    Log.e("TAG", "Not loaded");
+                }
+
                 String searchText = searchBox.getText().toString();
                 if(TextUtils.isEmpty(searchText)){
                     Toast.makeText(getActivity(), "Search can't be empty", Toast.LENGTH_SHORT).show();
@@ -88,6 +104,70 @@ public class ExploreFragment extends Fragment {
 
         return view;
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Query requestQuery = mDatabaseRequests.child(uID);
+
+        FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder> adapter = new FirebaseRecyclerAdapter<ExploreGettersAndSetters, ExploreViewHolder>(
+                ExploreGettersAndSetters.class,
+                R.layout.explore_single_layout,
+                ExploreViewHolder.class,
+                requestQuery
+        ) {
+            @Override
+            protected void populateViewHolder(final ExploreViewHolder viewHolder, final ExploreGettersAndSetters model, final int position) {
+                final String userKey = getRef(position).getKey();
+
+                mDatabaseRequests.child(uID).child(userKey).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        String type = dataSnapshot.child("request_type").getValue().toString();
+                        if(type.equals("received")){
+                            mDatabaseReference.child(userKey).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    layout.setVisibility(View.VISIBLE);
+
+                                    String rslt = "Your friend requests";
+                                    mResultNumber.setText(rslt);
+
+                                    viewHolder.setName(dataSnapshot.child("display_name").getValue().toString());
+                                    viewHolder.setUsername(dataSnapshot.child("username").getValue().toString());
+                                    Picasso.get().load(dataSnapshot.child("image").getValue().toString()).into(viewHolder.mImage);
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        } else {
+                            viewHolder.layout.setVisibility(View.GONE);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+                viewHolder.mDetailsButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent i = new Intent(getActivity(), DetailsActivity.class);
+                        i.putExtra("userId", userKey);
+                        startActivity(i);
+                    }
+                });
+            }
+        };
+        mRecyclerView.setAdapter(adapter);
+    }
+
 
     private void searchPeople(String searchText){
 
@@ -107,6 +187,11 @@ public class ExploreFragment extends Fragment {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         String showOnExplore = dataSnapshot.child("show_on_explore").getValue().toString();
+                        if(userKey.equals(uID)){
+                            viewHolder.layout.setVisibility(View.GONE);
+                            notfound--;
+                        }
+
                         if(showOnExplore.equals("true")){
                             viewHolder.mView.setVisibility(View.VISIBLE);
 
@@ -160,6 +245,7 @@ public class ExploreFragment extends Fragment {
         View mView;
         private Button mDetailsButton;
         private ConstraintLayout layout;
+        private ImageView mImage;
 
         public ExploreViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -167,6 +253,7 @@ public class ExploreFragment extends Fragment {
             mView = itemView;
             mDetailsButton = mView.findViewById(R.id.detailsButton);
             layout = (ConstraintLayout) mView.findViewById(R.id.layout);
+            mImage = (ImageView) mView.findViewById(R.id.singleImageView);
         }
 
         public void setName(String display_name) {

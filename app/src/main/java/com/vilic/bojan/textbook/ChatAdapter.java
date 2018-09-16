@@ -1,11 +1,14 @@
 package com.vilic.bojan.textbook;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,18 +37,19 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     private String currentUserId, username, profileImage, imageUrl;
     private int finding = 0;
     private String imgUrl;
+    private Context ctx;
 
     private List<ChatGettersAndSetters> mDataSet;
     private String timestamp;
 
-    public ChatAdapter(List<ChatGettersAndSetters> dataSet, String ts, String url) {
+    public ChatAdapter(List<ChatGettersAndSetters> dataSet, String ts, String url, Context context) {
+        ctx = context;
         imgUrl = url;
         mDataSet = dataSet;
         timestamp = ts;
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         currentUserId = firebaseUser.getUid();
-
         databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(currentUserId);
         referenceForChatterImage = FirebaseDatabase.getInstance().getReference().child("Users");
     }
@@ -75,7 +79,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
-        ChatGettersAndSetters chat = mDataSet.get(position);
+        final ChatGettersAndSetters chat = mDataSet.get(position);
 
         if(finding == 0 && !mDataSet.get(position).getSender().equals(currentUserId)){
             username = mDataSet.get(position).getSender();
@@ -103,7 +107,35 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         if(mDataSet.get(position).getSender().equals(currentUserId)) {
             holder.setImage(imgUrl);
         }
-        holder.mMessage.setText(chat.getMessage());
+        if(!mDataSet.get(position).getMessage().contains("https://firebasestorage.googleapis.com")){
+            holder.mMessage.setText(chat.getMessage());
+        }
+        else {
+            holder.sendImage(chat.getMessage());
+            holder.mImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(ctx, FullscreenImage.class);
+                    i.putExtra("ImageUrl", mDataSet.get(position).getMessage());
+                    ctx.startActivity(i);
+                }
+            });
+        }
+
+        holder.mMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(holder.mTimestamp.getText().toString().matches("")){
+                    String timestamp = chat.getTimestamp();
+                    holder.mTimestamp.setText(timestamp);
+                    holder.mTimestamp.animate().alpha(1).setDuration(300).start();
+                }
+                else {
+                    holder.mTimestamp.animate().alpha(1).setDuration(300).start();
+                    holder.mTimestamp.setText("");
+                }
+            }
+        });
     }
 
     @Override
@@ -113,18 +145,25 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView mMessage;
+        private TextView mMessage, mTimestamp;
         private CircleImageView mProfileImage;
+        private ImageView mImageView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
             mProfileImage = itemView.findViewById(R.id.profileImage);
             mMessage = itemView.findViewById(R.id.textMessage);
+            mTimestamp = itemView.findViewById(R.id.timestampText);
+            mImageView = itemView.findViewById(R.id.imageView);
         }
 
         public void setImage(String image){
             Picasso.get().load(image).into(mProfileImage);
+        }
+
+        public void sendImage(String image){
+            Picasso.get().load(image).into(mImageView);
         }
     }
 }
