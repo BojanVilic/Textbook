@@ -22,6 +22,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.onesignal.OneSignal;
 
 import java.lang.reflect.Field;
 
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private FriendsFragment friendsFragment;
     private ExploreFragment exploreFragment;
     private SettingsFragment settingsFragment;
+    private String uID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
+
+        OneSignal.startInit(this)
+                .inFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification)
+                .unsubscribeWhenNotificationsAreDisabled(true)
+                .init();
+
+
 
         mainBottomNavigation = (BottomNavigationView) findViewById(R.id.mainBottomNavigation);
 
@@ -51,6 +60,11 @@ public class MainActivity extends AppCompatActivity {
             startActivity(authIntent);
             finish();
         }
+
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        uID = firebaseUser.getUid();
+
+        OneSignal.sendTag("userID", uID);
 
         chatsFragment = new ChatsFragment();
         friendsFragment = new FriendsFragment();

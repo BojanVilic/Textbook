@@ -1,8 +1,11 @@
 package com.vilic.bojan.textbook;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -19,6 +23,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
@@ -34,7 +40,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     private static final int CHAT_START = 2;
 
     private DatabaseReference databaseReference, referenceForChatterImage;
-    private String currentUserId, username, profileImage, imageUrl;
+    private StorageReference storageReference;
+    private String currentUserId, username, profileImage, imageUrl, chatterId;
     private int finding = 0;
     private String imgUrl;
     private Context ctx;
@@ -42,7 +49,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     private List<ChatGettersAndSetters> mDataSet;
     private String timestamp;
 
-    public ChatAdapter(List<ChatGettersAndSetters> dataSet, String ts, String url, Context context) {
+    public ChatAdapter(List<ChatGettersAndSetters> dataSet, String ts, String url, Context context, String chtrId) {
+        chatterId = chtrId;
         ctx = context;
         imgUrl = url;
         mDataSet = dataSet;
@@ -52,6 +60,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         currentUserId = firebaseUser.getUid();
         databaseReference = FirebaseDatabase.getInstance().getReference().child("Users").child(currentUserId);
         referenceForChatterImage = FirebaseDatabase.getInstance().getReference().child("Users");
+        storageReference = FirebaseStorage.getInstance().getReference().child(currentUserId);
     }
 
     @NonNull
@@ -80,6 +89,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         final ChatGettersAndSetters chat = mDataSet.get(position);
+
+        holder.setIsRecyclable(false);
 
         if(finding == 0 && !mDataSet.get(position).getSender().equals(currentUserId)){
             username = mDataSet.get(position).getSender();
@@ -111,7 +122,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
             holder.mMessage.setText(chat.getMessage());
         }
         else {
-            holder.sendImage(chat.getMessage());
+            holder.sendImage(mDataSet.get(position).getMessage());
             holder.mImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -121,6 +132,89 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
                 }
             });
         }
+
+        holder.mImageView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(ctx);
+                dialog.setTitle("Delete image");
+                dialog.setMessage("Are you sure you want to delete this image?");
+                dialog.setPositiveButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.setNegativeButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        final String test = mDataSet.get(position).getMessage();
+                        databaseReference.child("messages").child(chatterId).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                                    if(ds.child("message").getValue().toString().equals(test)){
+                                        databaseReference.child("messages").child(chatterId).child(ds.getKey()).removeValue();
+                                        Intent intent = new Intent("Added_something");
+                                        intent.putExtra("position", String.valueOf(holder.getAdapterPosition()));
+                                        LocalBroadcastManager.getInstance(ctx).sendBroadcast(intent);
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                });
+                dialog.show();
+                return true;
+            }
+        });
+
+        holder.mMessage.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+
+                AlertDialog.Builder dialog = new AlertDialog.Builder(ctx);
+                dialog.setTitle("Delete message");
+                dialog.setMessage("Are you sure you want to delete this message?");
+                dialog.setPositiveButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.setNegativeButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        final String test = mDataSet.get(holder.getAdapterPosition()).getMessage();
+                        databaseReference.child("messages").child(chatterId).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                                    if(ds.child("message").getValue().toString().equals(test)){
+                                        databaseReference.child("messages").child(chatterId).child(ds.getKey()).removeValue();
+                                        Intent intent = new Intent("Added_something");
+                                        intent.putExtra("position", String.valueOf(holder.getAdapterPosition()));
+                                        LocalBroadcastManager.getInstance(ctx).sendBroadcast(intent);
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                });
+                dialog.show();
+                return true;
+            }
+        });
 
         holder.mMessage.setOnClickListener(new View.OnClickListener() {
             @Override

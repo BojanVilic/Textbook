@@ -5,8 +5,10 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -28,15 +30,22 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.onesignal.OneSignal;
 import com.squareup.picasso.Picasso;
 
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -117,7 +126,7 @@ public class ChatsFragment extends Fragment {
                     }
                 });
 
-                mFriendDatabase.child(userKey).child("messages").child(uID).addValueEventListener(new ValueEventListener() {
+                mFriendDatabase.child(uID).child("messages").child(userKey).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         for (DataSnapshot ds : dataSnapshot.getChildren()) {
@@ -125,10 +134,61 @@ public class ChatsFragment extends Fragment {
                             if(lastMessage.contains("https://firebasestorage.googleapis.com")){
                                 lastMessage = "Image received";
                             }
-                            String timestamp = ds.child("timestamp").getValue().toString();
-                            String timestampFix = timestamp.substring(0, timestamp.length() - 12);
                             viewHolder.setMessage(lastMessage);
-                            viewHolder.setTimestamp(timestampFix);
+
+                            String timestamp = ds.child("timestamp").getValue().toString();
+                            String dateString = timestamp.substring(6, timestamp.length());
+
+                            DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy.");
+                            Date date = null;
+                            try {
+                                date = formatter.parse(dateString);
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+
+                            Calendar calendarCurrent = Calendar.getInstance();
+                            Calendar c2 = Calendar.getInstance();
+                            c2.setTime(date);
+
+                            int day1 = calendarCurrent.get(Calendar.DAY_OF_YEAR);
+                            int day2 = c2.get(Calendar.DAY_OF_YEAR);
+
+                            if(day1 == day2){
+                                String timestampFix = timestamp.substring(0, timestamp.length() - 12);
+                                viewHolder.setTimestamp(timestampFix);
+                            }
+                            else if(day1 - day2 == 1){
+                                viewHolder.setTimestamp("Yesterday");
+                            }
+                            else if(day1 - day2 == 2){
+                                SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.add(Calendar.DAY_OF_WEEK, -2);
+                                viewHolder.setTimestamp(sdf.format(calendar.getTime()));
+                            }
+                            else if(day1 - day2 == 3){
+                                SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.add(Calendar.DAY_OF_WEEK, -3);
+                                viewHolder.setTimestamp(sdf.format(calendar.getTime()));
+                            }
+                            else if(day1 - day2 == 4){
+                                SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.add(Calendar.DAY_OF_WEEK, -4);
+                                viewHolder.setTimestamp(sdf.format(calendar.getTime()));
+                            }
+                            else if(day1 - day2 == 5){
+                                SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.add(Calendar.DAY_OF_WEEK, -5);
+                                viewHolder.setTimestamp(sdf.format(calendar.getTime()));
+                            }
+                            else {
+                                String timestampFix = timestamp.substring(6, timestamp.length());
+                                viewHolder.setTimestamp(timestampFix);
+                            }
                         }
                     }
 

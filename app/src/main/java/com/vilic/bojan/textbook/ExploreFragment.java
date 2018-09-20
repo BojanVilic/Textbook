@@ -72,6 +72,8 @@ public class ExploreFragment extends Fragment {
         layout = view.findViewById(R.id.header);
         searchButton = (Button) view.findViewById(R.id.searchButton);
 
+        MobileAds.initialize(getActivity(), "ca-app-pub-3529881240045238~7317309243");
+
         mInterstitialAd = new InterstitialAd(getActivity());
         mInterstitialAd.setAdUnitId("ca-app-pub-3529881240045238/3280316725");
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
