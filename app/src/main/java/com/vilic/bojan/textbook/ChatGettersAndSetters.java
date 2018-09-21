@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class ChatGettersAndSetters {
 
-    private String message, sender, timestamp;
+    private String message, sender, timestamp, seen;
 
     public String getTimestamp() {
         return timestamp;
@@ -16,10 +16,11 @@ public class ChatGettersAndSetters {
         this.timestamp = timestamp;
     }
 
-    public ChatGettersAndSetters(String message, String timestamp, String sender) {
+    public ChatGettersAndSetters(String message, String timestamp, String sender, String seen) {
         this.timestamp = timestamp;
         this.message = message;
         this.sender = sender;
+        this.seen = seen;
     }
 
     public String getMessage() {
@@ -40,5 +41,13 @@ public class ChatGettersAndSetters {
 
     public void setSender(String sender) {
         this.sender = sender;
+    }
+
+    public String getSeen() {
+        return seen;
+    }
+
+    public void setSeen(String seen) {
+        this.seen = seen;
     }
 }

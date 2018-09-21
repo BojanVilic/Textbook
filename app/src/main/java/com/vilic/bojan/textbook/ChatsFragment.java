@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,6 +32,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.onesignal.OneSignal;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.OutputStream;
@@ -86,6 +89,7 @@ public class ChatsFragment extends Fragment {
 
         mMessageDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uID).child("messages");
         mChatReference = FirebaseDatabase.getInstance().getReference().child("Chats").child(uID);
+        mFriendDatabase.keepSynced(true);
         mRecyclerView = view.findViewById(R.id.recyclerView);
         mLayoutManager = new LinearLayoutManager(getActivity());
         mLayoutManager.setReverseLayout(true);
@@ -131,6 +135,15 @@ public class ChatsFragment extends Fragment {
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         for (DataSnapshot ds : dataSnapshot.getChildren()) {
                             String lastMessage = ds.child("message").getValue().toString();
+                            if(ds.hasChild("seen")) {
+                                String seen = ds.child("seen").getValue().toString();
+                                if (seen.equals("false")) {
+                                    viewHolder.mLastText.setTypeface(null, Typeface.BOLD);
+                                } else {
+                                    viewHolder.mLastText.setTypeface(null, Typeface.NORMAL);
+                                }
+                            }
+
                             if(lastMessage.contains("https://firebasestorage.googleapis.com")){
                                 lastMessage = "Image received";
                             }
@@ -265,8 +278,18 @@ public class ChatsFragment extends Fragment {
             mTimestampText.setText(timestamp);
         }
 
-        public void setImage(String image){
-            Picasso.get().load(image).into(mProfileImage);
+        public void setImage(final String image){
+            Picasso.get().load(image).networkPolicy(NetworkPolicy.OFFLINE).into(mProfileImage, new Callback() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Picasso.get().load(image).into(mProfileImage);
+                }
+            });
         }
     }
 }

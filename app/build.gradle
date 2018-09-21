@@ -14,7 +14,7 @@ android {
         applicationId "com.vilic.bojan.textbook"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 4
+        versionCode 7
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -42,6 +42,7 @@ dependencies {
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.+'
     implementation 'com.github.StevenDXC:DxLoadingButton:2.1'
     implementation 'com.github.ybq:Android-SpinKit:1.1.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
     implementation 'com.google.firebase:firebase-database:16.0.1'
     implementation 'com.google.android.gms:play-services-ads:15.0.0'

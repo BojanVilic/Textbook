@@ -2,6 +2,8 @@ package com.vilic.bojan.textbook;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,9 +28,13 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Scanner;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -38,7 +44,7 @@ public class DetailsActivity extends AppCompatActivity {
     private TextView mDisplayName, mUsername, mFriendsSince, mMessagesExchanged;
     private Button mAddButton, mTextButton;
     private DatabaseReference mDatabase, mDatabaseRequests, mRootDatabase, mNotificationRef;
-    private String uID, id, req_type = "";
+    private String uID, id, req_type = "", notifications, name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +77,31 @@ public class DetailsActivity extends AppCompatActivity {
                 Intent i = new Intent(DetailsActivity.this, ChatActivity.class);
                 i.putExtra("userId", id);
                 startActivity(i);
+            }
+        });
+
+
+        mRootDatabase.child("Users").child(id).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                notifications = dataSnapshot.child("request_notification").getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        mRootDatabase.child("Users").child(uID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                name = dataSnapshot.child("display_name").getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
 
@@ -165,13 +196,16 @@ public class DetailsActivity extends AppCompatActivity {
                             HashMap<String, String> notificationData = new HashMap<>();
                             notificationData.put("from", uID);
                             notificationData.put("type", "request");
-
+                            if(notifications.equals("true")){
+                                sendNotification(id, name + " has sent you a friend request");
+                            }
                             mNotificationRef.child(id).push().setValue(notificationData);
                             Toast.makeText(DetailsActivity.this, "Request sent", Toast.LENGTH_SHORT).show();
                             mDatabaseRequests.child(id).child(uID).child("request_type").setValue("received");
                             mAddButton.setBackgroundColor(Color.parseColor("#dddddd"));
                             mAddButton.setText("Cancel");
                             mAddButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.grayx, 0, 0, 0);
+
                         }
                     });
                 }
@@ -217,6 +251,73 @@ public class DetailsActivity extends AppCompatActivity {
                             Toast.makeText(DetailsActivity.this, "Friend deleted", Toast.LENGTH_SHORT).show();
                         }
                     });
+                }
+            }
+        });
+    }
+
+    private void sendNotification(final String tUD, final String name) {
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                int SDK_INT = android.os.Build.VERSION.SDK_INT;
+                if (SDK_INT > 8) {
+                    StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+                            .permitAll().build();
+                    StrictMode.setThreadPolicy(policy);
+
+                    try {
+                        String jsonResponse;
+
+                        URL url = new URL("https://onesignal.com/api/v1/notifications");
+                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                        con.setUseCaches(false);
+                        con.setDoOutput(true);
+                        con.setDoInput(true);
+
+                        con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                        con.setRequestProperty("Authorization", "Basic MDc1NTU2NGYtZTM1MC00NzQ1LTkxN2UtOWRjZDBlYzdjODhj");
+                        con.setRequestMethod("POST");
+
+                        String strJsonBody = "{"
+                                + "\"app_id\": \"db2ac178-23a4-47d5-b15d-90857a1709c6\","
+
+                                + "\"filters\": [{\"field\": \"tag\", \"key\": \"userID\", \"relation\": \"=\", \"value\": \"" + tUD + "\"}],"
+
+                                + "\"data\": {\"foo\": \"bar\"},"
+                                + "\"contents\": {\"en\": \""+name+ "\"}"
+                                + "}";
+
+
+                        System.out.println("strJsonBody:\n" + strJsonBody);
+
+                        byte[] sendBytes = strJsonBody.getBytes("UTF-8");
+                        con.setFixedLengthStreamingMode(sendBytes.length);
+
+                        OutputStream outputStream = con.getOutputStream();
+                        outputStream.write(sendBytes);
+
+                        int httpResponse = con.getResponseCode();
+                        System.out.println("httpResponse: " + httpResponse);
+
+                        Log.i("seeThis3","really sending notification");
+
+                        if (httpResponse >= HttpURLConnection.HTTP_OK
+                                && httpResponse < HttpURLConnection.HTTP_BAD_REQUEST) {
+                            Scanner scanner = new Scanner(con.getInputStream(), "UTF-8");
+                            jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
+                            scanner.close();
+                        } else {
+                            Scanner scanner = new Scanner(con.getErrorStream(), "UTF-8");
+                            jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
+                            scanner.close();
+                        }
+                        System.out.println("jsonResponse:\n" + jsonResponse);
+
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                    }
                 }
             }
         });

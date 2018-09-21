@@ -97,6 +97,59 @@ public class ChatActivity extends AppCompatActivity {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(message, new IntentFilter("Added_something"));
 
+
+        mDatabaseRoot.child("messages").child(chatterId).addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String key = dataSnapshot.getKey();
+                String sender = dataSnapshot.child("sender").getValue().toString();
+                if(!sender.equals(currentUserId)) {
+                    mDatabaseRoot.child("messages").child(chatterId).child(key).child("seen").setValue("true");
+                }
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        mDatabaseRoot.child("messages").child(chatterId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    if(ds.hasChild("seen")) {
+                        String key = ds.getKey();
+                        String seen = ds.child("seen").getValue().toString();
+                        String sender = ds.child("sender").getValue().toString();
+                        if(!sender.equals(currentUserId) && seen.equals("false")){
+                            mDatabaseRoot.child("messages").child(chatterId).child(key).child("seen").setValue("true");
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
         mDatabaseRoot.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -156,11 +209,10 @@ public class ChatActivity extends AppCompatActivity {
                 if(!TextUtils.isEmpty(message)){
                     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd.MM.yyyy.");
                     mId = sdf.format(new Date());
-                    mMessageReference.setValue(new ChatGettersAndSetters(message, mId, currentUserId));
-                    mMessageReferenceForFriend.setValue(new ChatGettersAndSetters(message, mId, currentUserId));
+                    mMessageReference.setValue(new ChatGettersAndSetters(message, mId, currentUserId, "true"));
+                    mMessageReferenceForFriend.setValue(new ChatGettersAndSetters(message, mId, currentUserId, "false"));
                     mRootRef.child("Chats").child(currentUserId).child(chatterId).child("timestamp").setValue(ServerValue.TIMESTAMP);
                     mRootRef.child("Chats").child(chatterId).child(currentUserId).child("timestamp").setValue(ServerValue.TIMESTAMP);
-                    mRootRef.child("Message_Notifications").child(currentUserId).push().child("receiver").setValue(chatterId);
                     mTextMessage.setText("");
                     if(notifications.equals("true")){
                         sendNotification(chatterId, name + ": " + message);
@@ -213,7 +265,6 @@ public class ChatActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             final String position = intent.getStringExtra("position");
             final int pos = Integer.parseInt(position);
-            Log.i("ZZZZS", position);
             mAdapter.notifyDataSetChanged();
             mChats.clear();
             mRootRef.child("Users").child(currentUserId).child("messages").child(chatterId).addChildEventListener(new ChildEventListener() {
@@ -287,14 +338,14 @@ public class ChatActivity extends AppCompatActivity {
                                 mainUri = uri;
                                 SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd.MM.yyyy.");
                                 mId = sdf.format(new Date());
-                                mMessageReference.setValue(new ChatGettersAndSetters(mainUri.toString(), mId, currentUserId));
-                                mMessageReferenceForFriend.setValue(new ChatGettersAndSetters(mainUri.toString(), mId, currentUserId));
+                                mMessageReference.setValue(new ChatGettersAndSetters(mainUri.toString(), mId, currentUserId, "true"));
+                                mMessageReferenceForFriend.setValue(new ChatGettersAndSetters(mainUri.toString(), mId, currentUserId, "false"));
                                 mRootRef.child("Chats").child(currentUserId).child(chatterId).child("timestamp").setValue(ServerValue.TIMESTAMP);
-                                mRootRef.child("Chats").child(chatterId).child(currentUserId).child("timestamp").setValue(ServerValue.TIMESTAMP);
-                                mRootRef.child("Message_Notifications").child(currentUserId).push().child("receiver").setValue(chatterId).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                mRootRef.child("Chats").child(chatterId).child(currentUserId).child("timestamp").setValue(ServerValue.TIMESTAMP).addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
                                         progressDialog.dismiss();
+
                                     }
                                 });
                             }

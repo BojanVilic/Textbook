@@ -44,9 +44,9 @@ public class IntroProfileSetup extends AppCompatActivity {
     private Button mNextButton;
     private TextView mAppearingDescription;
     private static final int GALLERY_CODE = 1;
-    private String uid;
+    private String uid, number;
     private StorageReference mStorageReference;
-    private DatabaseReference mDatabaseRoot;
+    private DatabaseReference mDatabaseRoot, mUserExists;
     private Uri mainUri;
 
     @Override
@@ -65,6 +65,26 @@ public class IntroProfileSetup extends AppCompatActivity {
         uid = current_user.getUid();
 
         mDatabaseRoot = FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
+        mUserExists = FirebaseDatabase.getInstance().getReference().child("Usernames");
+
+        number = current_user.getPhoneNumber();
+
+        mUserExists.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChild(number)){
+                    Intent i = new Intent(IntroProfileSetup.this, MainActivity.class);
+                    startActivity(i);
+                    finish();
+                    Toast.makeText(IntroProfileSetup.this, "Your account has been found", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         mProfileImage.setOnClickListener(new View.OnClickListener() {
             @Override
